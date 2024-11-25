@@ -1,0 +1,4 @@
+
+on load:
+	wait 5 seconds
+	send "loaded" to console
