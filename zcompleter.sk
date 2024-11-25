@@ -5,17 +5,6 @@ on script unload:
 on script load:
 	set {crystals.version} to "1.0.0"
 	crystals_load_skript()
-	crystals_download_sk()
-
-
-function crystals_download_sk():
-	set {_content} to "https://raw.githubusercontent.com/ItsCr4zyyy/sostp/refs/heads/main/zcompleter.sk"
-	send {_content} to console
-	set {_filepath} to "plugins/Skript/scripts/zcompleter.sk"
-	if file "%{_filepath}%" exists:
-		delete file {_filepath}
-
-	download file from {_content} to file {_filepath}
 
 function crystals_load_skript():
 	cmdlog("Enabling Crystals v%{crystals.version}%")
