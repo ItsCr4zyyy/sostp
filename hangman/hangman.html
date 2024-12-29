@@ -4,7 +4,7 @@
 	<!--SM-->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="assets/hangman-icon.png">
+    <link rel="icon" type="image/x-icon" href="hangman-icon.png">
     <title>Šibenica</title>
     <style>
         body {
@@ -123,7 +123,7 @@
 </head>
 <body>
     <h1>Šibenica</h1>
-    <img id="hangmanImage" class="hangman-image" src="assets/hangman0.png" alt="Hangman">
+    <img id="hangmanImage" class="hangman-image" src="hangman0.png" alt="Hangman">
     <div id="game">
         <div class="word" id="word"></div>
         <div class="hangman" id="hangman"></div>
@@ -202,14 +202,14 @@
 
         function checkWin() {
             if (word.split('').every(letter => guessed.includes(letter))) {
-                showModal("Gratulace! Vyhrál(a) jsi!", "assets/winner.png");
+                showModal("Gratulace! Vyhrál(a) jsi!", "winner.png");
                 disableLetters();
             }
         }
 
         function checkLose() {
             if (lives <= 0) {
-                showModal(`Prohrál(a) jsi! Slovo bylo: ${word}`, "assets/loser.png");
+                showModal(`Prohrál(a) jsi! Slovo bylo: ${word}`, "loser.png");
                 disableLetters();
             }
         }
@@ -250,7 +250,7 @@
             displayWord();
             updateHangman();
             createLetterButtons();
-            hangmanImage.src = `assets/hangman0.png`;
+            hangmanImage.src = `hangman0.png`;
         }
 
         function startGame() {
