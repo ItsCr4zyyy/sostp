@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+	<!--SM-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="assets/hangman-icon.png">
+    <title>Šibenica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        .word {
+            font-size: 24px;
+            letter-spacing: 5px;
+            margin: 20px 0;
+        }
+        .letters {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px auto;
+            max-width: 800px;
+        }
+        .letter {
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            min-width: 40px;
+        }
+        .letter:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .hangman {
+            font-size: 20px;
+            margin: 20px 0;
+        }
+        .message {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .reset-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reset-button:hover {
+            background-color: #218838;
+        }
+        .hangman-image {
+            margin: 20px auto;
+            width: 150px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            border-radius: 10px;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+		.modal img {
+			display: block;
+			margin: 0 auto 20px;
+			max-width: 100%;
+			height: auto;
+		}
+		.modal p {
+			margin: 15px;
+			font-size: 18px;
+			color: #333;
+		}
+        .modal-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal-button:hover {
+            background-color: #288F45;
+        }
+    </style>
+</head>
+<body>
+    <h1>Šibenica</h1>
+    <img id="hangmanImage" class="hangman-image" src="assets/hangman0.png" alt="Hangman">
+    <div id="game">
+        <div class="word" id="word"></div>
+        <div class="hangman" id="hangman"></div>
+        <div class="letters" id="letters"></div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay"></div>
+    <div id="modal" class="modal">
+		<img id="modalImage" src="" alt="Výsledek">
+        <p id="modalMessage"></p>
+        <button id="modalButton" class="modal-button">Restartovat hru</button>
+    </div>
+
+    <script>
+        const words = [
+            "JABLKO",
+            "HRUŠKA",
+            "TŘEŠEŇ",
+            "BANÁN",
+            "MELOUN",
+            "PES",
+            "KOČKA",
+            "MORČE",
+            "MATEMATIKA",
+            "OPERACE",
+            "SILVESTR",
+            "ŠIBENICE",
+            "DUCH"
+        ];
+
+        let word = "";
+        const maxLives = 7;
+        let lives = maxLives;
+        let guessed = [];
+
+        const wordElement = document.getElementById('word');
+        const hangmanElement = document.getElementById('hangman');
+        const lettersElement = document.getElementById('letters');
+        const hangmanImage = document.getElementById('hangmanImage');
+        const modal = document.getElementById('modal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalButton = document.getElementById('modalButton');
+		const modalImage = document.getElementById('modalImage');
+
+        function showModal(message, imageSrc) {
+            modalMessage.textContent = message;
+            modal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+			modalImage.src = imageSrc;
+			modalImage.style.display = "block";
+        }
+
+        function hideModal() {
+            modal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+			modalImage.style.display = 'none';
+        }
+
+        modalButton.addEventListener('click', () => {
+            hideModal();
+            resetGame();
+        });
+
+        function displayWord() {
+            wordElement.textContent = word
+                .split('')
+                .map(letter => (guessed.includes(letter) ? letter : '_'))
+                .join(' ');
+        }
+
+        function updateHangman() {
+            hangmanElement.textContent = `Životy: ${lives}`;
+            hangmanImage.src = `assets/hangman${maxLives - lives}.png`;
+        }
+
+        function checkWin() {
+            if (word.split('').every(letter => guessed.includes(letter))) {
+                showModal("Gratulace! Vyhrál(a) jsi!", "assets/winner.png");
+                disableLetters();
+            }
+        }
+
+        function checkLose() {
+            if (lives <= 0) {
+                showModal(`Prohrál(a) jsi! Slovo bylo: ${word}`, "assets/loser.png");
+                disableLetters();
+            }
+        }
+
+        function disableLetters() {
+            document.querySelectorAll('.letter').forEach(button => button.disabled = true);
+        }
+
+        function createLetterButtons() {
+            lettersElement.innerHTML = "";
+            const alphabet = 'AÁBCČDĎEÉĚFGHIÍJKLMNŇOÓPQRŘSŠTŤUÚŮVWXYÝZŽ'.split('');
+            alphabet.forEach(letter => {
+                const button = document.createElement('button');
+                button.textContent = letter;
+                button.classList.add('letter');
+                button.addEventListener('click', () => handleGuess(letter, button));
+                lettersElement.appendChild(button);
+            });
+        }
+
+        function handleGuess(letter, button) {
+            button.disabled = true;
+            if (word.includes(letter)) {
+                guessed.push(letter);
+                displayWord();
+                checkWin();
+            } else {
+                lives--;
+                updateHangman();
+                checkLose();
+            }
+        }
+
+        function resetGame() {
+            word = words[Math.floor(Math.random() * words.length)];
+            lives = maxLives;
+            guessed = [];
+            displayWord();
+            updateHangman();
+            createLetterButtons();
+            hangmanImage.src = `assets/hangman0.png`;
+        }
+
+        function startGame() {
+            resetGame();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            startGame();
+        });
+    </script>
+</body>
+</html>
