@@ -1,0 +1,17 @@
+{
+  "name": "knihovnicky_system",
+  "version": "0.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "install": "npm install"
+  },
+  "keywords": [],
+  "author": "SM",
+  "license": "ISC",
+  "description": "Haldicky :)",
+  "dependencies": {
+    "express": "^4.21.2",
+    "sqlite3": "^5.1.7"
+  }
+}
